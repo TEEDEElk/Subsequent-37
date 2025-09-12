@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Successor37\Source">
+      <UniqueIdentifier>{42D3814C-9C2E-DF35-CDB7-1C2C1622AF65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Successor37">
+      <UniqueIdentifier>{E455406B-CFCD-102A-072E-B742AB3177AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JUCE Library Code">
+      <UniqueIdentifier>{7ED5A90E-41AF-A1EF-659B-37CEEAB9BA61}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Main.cpp">
+      <Filter>Successor37\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MainComponent.cpp">
+      <Filter>Successor37\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ADSREnvelope.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Arpeggiator.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\CustomLookAndFeel.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\CustomSlider.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\LFO.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ModulationMatrix.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MoogFilter.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Oscillator.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\PluginEditor.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\PluginProcessor.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\PresetManager.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\StereoDelay.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\SynthSound.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\SynthVoice.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\MainComponent.h">
+      <Filter>Successor37\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ADSREnvelope.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Arpeggiator.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Chorus.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\CustomLookAndFeel.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\CustomSlider.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\LFO.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ModulationMatrix.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MoogFilter.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Oscillator.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\PluginEditor.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\PluginProcessor.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\PresetManager.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\StereoDelay.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\SynthSound.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\SynthVoice.h">
+      <Filter>Successor37</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
+      <Filter>JUCE Library Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include=".\resources.rc">
+      <Filter>JUCE Library Code</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
