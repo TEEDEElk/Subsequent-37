@@ -1,396 +1,324 @@
-void Successor37AudioProcessorEditor::createOscillatorSection()
-{
-    // Oscillator waveform selector
-    oscWaveformSelector.addItem("Saw", 1);
-    oscWaveformSelector.addItem("Square", 2);
-    oscWaveformSelector.addItem("Triangle", 3);
-    oscWaveformSelector.addItem("Sine", 4);
-    oscWaveformSelector.setSelectedId(1);
-    addAndMakeVisible(oscWaveformSelector);
-    oscWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.apvts, "oscWaveform", oscWaveformSelector);
-    
-    // Oscillator parameters
-    createSlider(oscTuneSlider, oscTuneLabel, "TUNE", audioProcessor.apvts, "oscTune");
-    createSlider(oscPWMSlider, oscPWMLabel, "PWM", audioProcessor.apvts, "oscPWM");
-}
-
-void Successor37AudioProcessorEditor::createFilterSection()
-{
-    createSlider(filterCutoffSlider, filterCutoffLabel, "CUTOFF", audioProcessor.apvts, "filterCutoff");
-    createSlider(filterResonanceSlider, filterResonanceLabel, "RES", audioProcessor.apvts, "filterResonance");
-    createSlider(filterDriveSlider, filterDriveLabel, "DRIVE", audioProcessor.apvts, "filterDrive");
-    createSlider(filterEnvAmountSlider, filterEnvAmountLabel, "ENV AMT", audioProcessor.apvts, "filterEnvAmount");
-}
-
-void Successor37AudioProcessorEditor::createEnvelopeSection()
-{
-    // Amp envelope
-    createSlider(attackSlider, attackLabel, "ATTACK", audioProcessor.apvts, "attack");
-    createSlider(decaySlider, decayLabel, "DECAY", audioProcessor.apvts, "decay");
-    createSlider(sustainSlider, sustainLabel, "SUSTAIN", audioProcessor.apvts, "sustain");
-    createSlider(releaseSlider, releaseLabel, "RELEASE", audioProcessor.apvts, "release");
-    
-    // Filter envelope
-    createSlider(filterAttackSlider, filterAttackLabel, "ATTACK", audioProcessor.apvts, "filterAttack");
-    createSlider(filterDecaySlider, filterDecayLabel, "DECAY", audioProcessor.apvts, "filterDecay");
-    createSlider(filterSustainSlider, filterSustainLabel, "SUSTAIN", audioProcessor.apvts, "filterSustain");
-    createSlider(filterReleaseSlider, filterReleaseLabel, "RELEASE", audioProcessor.apvts, "filterRelease");
-}
-
-void Successor37AudioProcessorEditor::createModulationSection()
-{
-    createSlider(lfo1RateSlider, lfo1RateLabel, "RATE", audioProcessor.apvts, "lfo1Rate");
-    createSlider(lfo1AmountSlider, lfo1AmountLabel, "AMOUNT", audioProcessor.apvts, "lfo1Amount");
-    createSlider(modWheelAmountSlider, modWheelLabel, "MOD WHEEL", audioProcessor.apvts, "modWheelToFilter");
-    createSlider(velocityAmountSlider, velocityLabel, "VELOCITY", audioProcessor.apvts, "velocityToFilter");
-    createSlider(masterVolumeSlider, masterVolumeLabel, "VOLUME", audioProcessor.apvts, "masterVolume");
-}
 // PluginEditor.cpp
 #include "PluginEditor.h"
-#include "PluginProcessor.h"
 
 //==============================================================================
 Successor37AudioProcessorEditor::Successor37AudioProcessorEditor(Successor37AudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
     // Set overall size
-    setSize(1000, 600);
-    
-    // Load custom graphics
-    loadCustomGraphics();
+    setSize(800, 600);
     
     // Set custom look and feel
     setLookAndFeel(&customLookAndFeel);
     
-    // Create all UI components
-    createAllComponents();
+    // Create UI sections
+    createOscillatorSection();
+    createFilterSection();
+    createEnvelopeSection();
+    createModulationSection();
 }
 
-void Successor37AudioProcessorEditor::loadCustomGraphics()
+Successor37AudioProcessorEditor::~Successor37AudioProcessorEditor()
 {
-    // Load knob sprite sheet
-    bool knobsLoaded = customLookAndFeel.loadKnobGraphics(
-        BinaryData::knob_strip_png, 
-        BinaryData::knob_strip_pngSize
-    );
-    
-    // Load background image
-    bool backgroundLoaded = customLookAndFeel.loadBackgroundGraphics(
-        BinaryData::panel_bg_png,
-        BinaryData::panel_bg_pngSize
-    );
-    
-    // Fallback if graphics don't load
-    if (!knobsLoaded) {
-        DBG("Knob graphics failed to load! Using fallback rendering.");
-    }
-    
-    if (!backgroundLoaded) {
-        DBG("Background graphics failed to load! Using fallback rendering.");
-    }
+    setLookAndFeel(nullptr);
 }
 
+//==============================================================================
 void Successor37AudioProcessorEditor::paint(juce::Graphics& g)
 {
-    // Draw background using custom graphics or fallback
-    if (customLookAndFeel.getBackgroundImage().isValid()) {
-        g.drawImageWithin(customLookAndFeel.getBackgroundImage(),
-                        0, 0, getWidth(), getHeight(),
-                        juce::RectanglePlacement::fillDestination);
-    } else {
-        // Fallback gradient background
-        juce::ColourGradient gradient(
-            juce::Colour(0xff2c3e50), 0, 0,
-            juce::Colour(0xff34495e), getWidth(), getHeight(),
-            false
-        );
-        g.setGradientFill(gradient);
-        g.fillAll();
-    }
+    // Background gradient
+    juce::ColourGradient gradient(
+        juce::Colour(0xff2c3e50), 0.0f, 0.0f,
+        juce::Colour(0xff34495e), 0.0f, static_cast<float>(getHeight()),
+        false
+    );
+    g.setGradientFill(gradient);
+    g.fillAll();
     
-    // Draw section backgrounds
-    drawSectionBackgrounds(g);
-    
-    // Draw title and dividers
-    drawUIOverlays(g);
-}
-
-void Successor37AudioProcessorEditor::drawSectionBackgrounds(juce::Graphics& g)
-{
-    g.setColour(juce::Colour(0x5534495e)); // Semi-transparent dark blue
-    
-    // Section bounds
-    const int sectionWidth = 240;
-    const int padding = 10;
-    
-    juce::Rectangle<int> sections[] = {
-        {padding, 40, sectionWidth, getHeight() - 50},
-        {padding + sectionWidth, 40, sectionWidth, getHeight() - 50},
-        {padding + sectionWidth * 2, 40, sectionWidth, getHeight() - 50},
-        {padding + sectionWidth * 3, 40, sectionWidth - padding, getHeight() - 50}
-    };
-    
-    for (const auto& section : sections) {
-        g.fillRoundedRectangle(section.toFloat(), 8.0f);
-        g.setColour(juce::Colour(0x44ffffff));
-        g.drawRoundedRectangle(section.toFloat(), 8.0f, 1.5f);
-    }
-}
-
-void Successor37AudioProcessorEditor::drawUIOverlays(juce::Graphics& g)
-{
     // Draw title
-    g.setColour(juce::Colour(0xffecf0f1));
-    g.setFont(juce::Font("Bank Gothic", 28.0f, juce::Font::bold));
-    g.drawText("SUCCESSOR 37", 0, 5, getWidth(), 30, 
+    g.setColour(juce::Colours::white);
+    g.setFont(juce::Font(24.0f, juce::Font::bold));
+    g.drawText("SUCCESSOR 37", getLocalBounds().removeFromTop(40), 
                juce::Justification::centred, true);
-    
-    // Draw section dividers
-    g.setColour(juce::Colour(0x88ffffff));
-    g.drawLine(250, 50, 250, getHeight() - 10, 2);
-    g.drawLine(495, 50, 495, getHeight() - 10, 2);
-    g.drawLine(740, 50, 740, getHeight() - 10, 2);
-    
-    // Draw section headers
-    g.setFont(juce::Font("Bank Gothic", 16.0f, juce::Font::bold));
-    g.drawText("OSCILLATORS", 20, 45, 220, 20, juce::Justification::centred, true);
-    g.drawText("FILTER", 270, 45, 220, 20, juce::Justification::centred, true);
-    g.drawText("ENVELOPES", 515, 45, 220, 20, juce::Justification::centred, true);
-    g.drawText("MODULATION", 760, 45, 220, 20, juce::Justification::centred, true);
 }
 
 void Successor37AudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds().reduced(15);
+    auto area = getLocalBounds().reduced(10);
+    area.removeFromTop(50); // Title space
     
-    // Section dimensions
-    const int sectionWidth = 240;
-    const int sectionPadding = 10;
-    const int knobSize = 70;
-    const int smallKnobSize = 50;
-    const int labelHeight = 20;
-    const int sectionHeaderHeight = 30;
+    const int sectionHeight = area.getHeight() / 2;
     
-    // ==================== OSCILLATOR SECTION ====================
-    auto oscSection = area.removeFromLeft(sectionWidth);
+    // Top row: Oscillator and Filter
+    auto topRow = area.removeFromTop(sectionHeight);
+    auto oscSection = topRow.removeFromLeft(area.getWidth() / 2);
+    auto filterSection = topRow;
     
-    // Oscillator section header
-    oscSectionLabel.setBounds(oscSection.getX(), 15, sectionWidth, sectionHeaderHeight);
-    oscSection.removeFromTop(sectionHeaderHeight + 10);
+    // Bottom row: Envelopes and Modulation
+    auto bottomRow = area;
+    auto envSection = bottomRow.removeFromLeft(area.getWidth() / 2);
+    auto modSection = bottomRow;
     
-    // Oscillator 1 row
-    auto osc1Row = oscSection.removeFromTop(100);
-    oscWaveformSelector.setBounds(osc1Row.removeFromLeft(100).reduced(5));
-    oscWaveformSelector.setSize(100, 30);
-    oscTuneSlider.setBounds(osc1Row.removeFromLeft(knobSize).reduced(5));
-    oscTuneLabel.setBounds(oscTuneSlider.getX(), oscTuneSlider.getBottom() + 2, knobSize, labelHeight);
+    // Layout oscillator section
+    layoutOscillatorSection(oscSection);
     
-    // Oscillator 2 row
-    auto osc2Row = oscSection.removeFromTop(100);
-    auto osc2LabelArea = osc2Row.removeFromLeft(100);
-    oscPWMSlider.setBounds(osc2Row.removeFromLeft(knobSize).reduced(5));
-    oscPWMLabel.setBounds(oscPWMSlider.getX(), oscPWMSlider.getBottom() + 2, knobSize, labelHeight);
+    // Layout filter section
+    layoutFilterSection(filterSection);
     
-    // Noise and Mix row
-    auto noiseMixRow = oscSection.removeFromTop(100);
-    auto noiseSlider = noiseMixRow.removeFromLeft(knobSize);
-    auto mixSlider = noiseMixRow.removeFromLeft(knobSize);
+    // Layout envelope section
+    layoutEnvelopeSection(envSection);
     
-    // ==================== FILTER SECTION ====================
-    auto filterSection = area.removeFromLeft(sectionWidth);
-    
-    // Filter section header
-    filterSectionLabel.setBounds(filterSection.getX(), 15, sectionWidth, sectionHeaderHeight);
-    filterSection.removeFromTop(sectionHeaderHeight + 10);
-    
-    // Large cutoff knob (centerpiece)
-    auto cutoffRow = filterSection.removeFromTop(120);
-    filterCutoffSlider.setBounds(cutoffRow.getCentreX() - knobSize/2, cutoffRow.getY(), knobSize + 20, knobSize + 20);
-    filterCutoffLabel.setBounds(filterCutoffSlider.getX(), filterCutoffSlider.getBottom() + 2, knobSize + 20, labelHeight);
-    
-    // Resonance and Drive row
-    auto resDriveRow = filterSection.removeFromTop(90);
-    filterResonanceSlider.setBounds(resDriveRow.removeFromLeft(knobSize).reduced(5));
-    filterResonanceLabel.setBounds(filterResonanceSlider.getX(), filterResonanceSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    filterDriveSlider.setBounds(resDriveRow.removeFromLeft(knobSize).reduced(5));
-    filterDriveLabel.setBounds(filterDriveSlider.getX(), filterDriveSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    // Env Amount and Keyboard Tracking row
-    auto envTrackRow = filterSection.removeFromTop(90);
-    filterEnvAmountSlider.setBounds(envTrackRow.removeFromLeft(knobSize).reduced(5));
-    filterEnvAmountLabel.setBounds(filterEnvAmountSlider.getX(), filterEnvAmountSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    // ==================== ENVELOPE SECTION ====================
-    auto envSection = area.removeFromLeft(sectionWidth);
-    
-    // Envelope section header
-    envSectionLabel.setBounds(envSection.getX(), 15, sectionWidth, sectionHeaderHeight);
-    envSection.removeFromTop(sectionHeaderHeight + 10);
-    
-    // Split into two columns: Amp Env and Filter Env
-    auto ampEnvColumn = envSection.removeFromLeft(sectionWidth / 2);
-    auto filterEnvColumn = envSection;
-    
-    // Amp Envelope column
-    ampEnvColumn.removeFromTop(10);
-    juce::Label ampEnvLabel("Amp Env", "AMP ENV");
-    ampEnvLabel.setBounds(ampEnvColumn.getX(), ampEnvColumn.getY() - 20, ampEnvColumn.getWidth(), 20);
-    ampEnvLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(ampEnvLabel);
-    
-    attackSlider.setBounds(ampEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    attackLabel.setBounds(attackSlider.getX(), attackSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    decaySlider.setBounds(ampEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    decayLabel.setBounds(decaySlider.getX(), decaySlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    sustainSlider.setBounds(ampEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    sustainLabel.setBounds(sustainSlider.getX(), sustainSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    releaseSlider.setBounds(ampEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    releaseLabel.setBounds(releaseSlider.getX(), releaseSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    // Filter Envelope column
-    filterEnvColumn.removeFromTop(10);
-    juce::Label filterEnvLabel("Filter Env", "FILTER ENV");
-    filterEnvLabel.setBounds(filterEnvColumn.getX(), filterEnvColumn.getY() - 20, filterEnvColumn.getWidth(), 20);
-    filterEnvLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(filterEnvLabel);
-    
-    filterAttackSlider.setBounds(filterEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    filterAttackLabel.setBounds(filterAttackSlider.getX(), filterAttackSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    filterDecaySlider.setBounds(filterEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    filterDecayLabel.setBounds(filterDecaySlider.getX(), filterDecaySlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    filterSustainSlider.setBounds(filterEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    filterSustainLabel.setBounds(filterSustainSlider.getX(), filterSustainSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    filterReleaseSlider.setBounds(filterEnvColumn.removeFromTop(smallKnobSize + 25).reduced(2));
-    filterReleaseLabel.setBounds(filterReleaseSlider.getX(), filterReleaseSlider.getBottom() + 2, smallKnobSize, labelHeight);
-    
-    // ==================== MODULATION SECTION ====================
-    auto modSection = area;
-    
-    // Modulation section header
-    lfoSectionLabel.setBounds(modSection.getX(), 15, modSection.getWidth(), sectionHeaderHeight);
-    modSection.removeFromTop(sectionHeaderHeight + 10);
-    
-    // LFO 1 Section
-    auto lfo1Area = modSection.removeFromTop(120);
-    juce::Label lfo1Label("LFO1", "LFO 1");
-    lfo1Label.setBounds(lfo1Area.getX(), lfo1Area.getY() - 20, lfo1Area.getWidth(), 20);
-    lfo1Label.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(lfo1Label);
-    
-    lfo1RateSlider.setBounds(lfo1Area.removeFromLeft(knobSize).reduced(5));
-    lfo1RateLabel.setBounds(lfo1RateSlider.getX(), lfo1RateSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    lfo1AmountSlider.setBounds(lfo1Area.removeFromLeft(knobSize).reduced(5));
-    lfo1AmountLabel.setBounds(lfo1AmountSlider.getX(), lfo1AmountSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    // LFO 2 Section
-    auto lfo2Area = modSection.removeFromTop(120);
-    juce::Label lfo2Label("LFO2", "LFO 2");
-    lfo2Label.setBounds(lfo2Area.getX(), lfo2Area.getY() - 20, lfo2Area.getWidth(), 20);
-    lfo2Label.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(lfo2Label);
-    
-    // Modulation Sources
-    auto modSourcesArea = modSection.removeFromTop(120);
-    juce::Label modSourcesLabel("ModSources", "MOD SOURCES");
-    modSourcesLabel.setBounds(modSourcesArea.getX(), modSourcesArea.getY() - 20, modSourcesArea.getWidth(), 20);
-    modSourcesLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(modSourcesLabel);
-    
-    modWheelAmountSlider.setBounds(modSourcesArea.removeFromLeft(knobSize).reduced(5));
-    modWheelLabel.setBounds(modWheelAmountSlider.getX(), modWheelAmountSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    velocityAmountSlider.setBounds(modSourcesArea.removeFromLeft(knobSize).reduced(5));
-    velocityLabel.setBounds(velocityAmountSlider.getX(), velocityAmountSlider.getBottom() + 2, knobSize, labelHeight);
-    
-    // Master Output
-    auto masterArea = modSection.removeFromTop(120);
-    juce::Label masterLabel("Master", "MASTER");
-    masterLabel.setBounds(masterArea.getX(), masterArea.getY() - 20, masterArea.getWidth(), 20);
-    masterLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(masterLabel);
-    
-    masterVolumeSlider.setBounds(masterArea.getCentreX() - knobSize/2, masterArea.getY(), knobSize, knobSize);
-    masterVolumeLabel.setBounds(masterVolumeSlider.getX(), masterVolumeSlider.getBottom() + 2, knobSize, labelHeight);
+    // Layout modulation section
+    layoutModulationSection(modSection);
 }
 
 //==============================================================================
-void Successor37AudioProcessorEditor::createSlider(juce::Slider& slider, juce::Label& label, 
-                                                  const juce::String& name, 
-                                                  juce::AudioProcessorValueTreeState& apvts, 
-                                                  const juce::String& paramID)
+void Successor37AudioProcessorEditor::createOscillatorSection()
 {
-    // Configure slider
-    slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xfff39c12));
-    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0x6634495e));
-    slider.setColour(juce::Slider::trackColourId, juce::Colour(0x00ffffff)); // Transparent track
-
-    // Configure label
-    label.setText(name, juce::dontSendNotification);
-    label.setJustificationType(juce::Justification::centredTop);
-    label.setColour(juce::Label::textColourId, juce::Colour(0xffecf0f1));
-    label.setFont(juce::Font(12.0f, juce::Font::bold));
-
-    // Add to UI
-    addAndMakeVisible(slider);
-    addAndMakeVisible(label);
-
-    // Create parameter attachment
-    if (apvts.getParameter(paramID) != nullptr) {
-        if (paramID == "filterCutoff") {
-            filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "filterResonance") {
-            filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "filterDrive") {
-            filterDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "filterEnvAmount") {
-            filterEnvAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "attack") {
-            attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "decay") {
-            decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "sustain") {
-            sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "release") {
-            releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "lfo1Rate") {
-            lfo1RateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "lfo1Amount") {
-            lfo1AmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "modWheelToFilter") {
-            modWheelAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "velocityToFilter") {
-            velocityAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        } else if (paramID == "masterVolume") {
-            masterVolumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, slider);
-        }
-        // Add more parameter attachments as needed
-    }
+    // Oscillator waveform selector
+    oscWaveformSelector.addItem("Sine", 1);
+    oscWaveformSelector.addItem("Saw", 2);
+    oscWaveformSelector.addItem("Square", 3);
+    oscWaveformSelector.addItem("Triangle", 4);
+    oscWaveformSelector.setSelectedId(2);
+    addAndMakeVisible(oscWaveformSelector);
+    oscWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "oscWaveform", oscWaveformSelector);
+    
+    // Oscillator tune slider
+    oscTuneSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    oscTuneSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(oscTuneSlider);
+    oscTuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "oscTune", oscTuneSlider);
+    
+    oscTuneLabel.setText("Tune", juce::dontSendNotification);
+    oscTuneLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(oscTuneLabel);
+    
+    // PWM slider
+    oscPWMSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    oscPWMSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(oscPWMSlider);
+    oscPWMAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "oscPWM", oscPWMSlider);
+    
+    oscPWMLabel.setText("PWM", juce::dontSendNotification);
+    oscPWMLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(oscPWMLabel);
 }
 
-void Successor37AudioProcessorEditor::createComboBox(juce::ComboBox& comboBox, const juce::String& name,
-                                                    juce::AudioProcessorValueTreeState& apvts, 
-                                                    const juce::String& paramID)
+void Successor37AudioProcessorEditor::createFilterSection()
 {
-    comboBox.addItem("Sine", 1);
-    comboBox.addItem("Saw", 2);
-    comboBox.addItem("Square", 3);
-    comboBox.addItem("Triangle", 4);
+    // Filter cutoff
+    filterCutoffSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterCutoffSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(filterCutoffSlider);
+    filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterCutoff", filterCutoffSlider);
     
-    addAndMakeVisible(comboBox);
+    filterCutoffLabel.setText("Cutoff", juce::dontSendNotification);
+    filterCutoffLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(filterCutoffLabel);
     
-    if (paramID == "oscWaveform") {
-        oscWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, paramID, comboBox);
-    }
-    // ... add more combo box attachments
+    // Filter resonance
+    filterResonanceSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterResonanceSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(filterResonanceSlider);
+    filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterResonance", filterResonanceSlider);
+    
+    filterResonanceLabel.setText("Resonance", juce::dontSendNotification);
+    filterResonanceLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(filterResonanceLabel);
+    
+    // Filter drive
+    filterDriveSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterDriveSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(filterDriveSlider);
+    filterDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterDrive", filterDriveSlider);
+    
+    filterDriveLabel.setText("Drive", juce::dontSendNotification);
+    filterDriveLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(filterDriveLabel);
+    
+    // Filter envelope amount
+    filterEnvAmountSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterEnvAmountSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(filterEnvAmountSlider);
+    filterEnvAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterEnvAmount", filterEnvAmountSlider);
+    
+    filterEnvAmountLabel.setText("Env Amount", juce::dontSendNotification);
+    filterEnvAmountLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(filterEnvAmountLabel);
+}
+
+void Successor37AudioProcessorEditor::createEnvelopeSection()
+{
+    // Amp envelope
+    auto createAmpSlider = [this](juce::Slider& slider, juce::Label& label, 
+                                   const juce::String& labelText, const juce::String& paramID)
+    {
+        slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+        addAndMakeVisible(slider);
+        
+        label.setText(labelText, juce::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(label);
+    };
+    
+    createAmpSlider(attackSlider, attackLabel, "A", "ampAttack");
+    attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "ampAttack", attackSlider);
+    
+    createAmpSlider(decaySlider, decayLabel, "D", "ampDecay");
+    decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "ampDecay", decaySlider);
+    
+    createAmpSlider(sustainSlider, sustainLabel, "S", "ampSustain");
+    sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "ampSustain", sustainSlider);
+    
+    createAmpSlider(releaseSlider, releaseLabel, "R", "ampRelease");
+    releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "ampRelease", releaseSlider);
+    
+    // Filter envelope
+    createAmpSlider(filterAttackSlider, filterAttackLabel, "A", "filterAttack");
+    filterAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterAttack", filterAttackSlider);
+    
+    createAmpSlider(filterDecaySlider, filterDecayLabel, "D", "filterDecay");
+    filterDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterDecay", filterDecaySlider);
+    
+    createAmpSlider(filterSustainSlider, filterSustainLabel, "S", "filterSustain");
+    filterSustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterSustain", filterSustainSlider);
+    
+    createAmpSlider(filterReleaseSlider, filterReleaseLabel, "R", "filterRelease");
+    filterReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterRelease", filterReleaseSlider);
+}
+
+void Successor37AudioProcessorEditor::createModulationSection()
+{
+    // LFO Rate
+    lfo1RateSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    lfo1RateSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(lfo1RateSlider);
+    lfo1RateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "lfo1Rate", lfo1RateSlider);
+    
+    lfo1RateLabel.setText("LFO Rate", juce::dontSendNotification);
+    lfo1RateLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(lfo1RateLabel);
+    
+    // LFO Amount (to filter)
+    lfo1AmountSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    lfo1AmountSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(lfo1AmountSlider);
+    lfo1AmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "lfo1ToFilter", lfo1AmountSlider);
+    
+    lfo1AmountLabel.setText("LFO > Filter", juce::dontSendNotification);
+    lfo1AmountLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(lfo1AmountLabel);
+    
+    // Master volume
+    masterVolumeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    masterVolumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    addAndMakeVisible(masterVolumeSlider);
+    masterVolumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "masterVolume", masterVolumeSlider);
+    
+    masterVolumeLabel.setText("Volume", juce::dontSendNotification);
+    masterVolumeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(masterVolumeLabel);
+}
+
+//==============================================================================
+void Successor37AudioProcessorEditor::layoutOscillatorSection(juce::Rectangle<int> area)
+{
+    area.reduce(10, 10);
+    
+    auto row1 = area.removeFromTop(80);
+    oscWaveformSelector.setBounds(row1.removeFromLeft(120).reduced(5));
+    oscTuneSlider.setBounds(row1.removeFromLeft(80).reduced(5));
+    oscTuneLabel.setBounds(oscTuneSlider.getBounds().removeFromBottom(20));
+    
+    auto row2 = area.removeFromTop(80);
+    oscPWMSlider.setBounds(row2.removeFromLeft(80).reduced(5));
+    oscPWMLabel.setBounds(oscPWMSlider.getBounds().removeFromBottom(20));
+}
+
+void Successor37AudioProcessorEditor::layoutFilterSection(juce::Rectangle<int> area)
+{
+    area.reduce(10, 10);
+    
+    auto row1 = area.removeFromTop(80);
+    filterCutoffSlider.setBounds(row1.removeFromLeft(80).reduced(5));
+    filterCutoffLabel.setBounds(filterCutoffSlider.getBounds().removeFromBottom(20));
+    
+    filterResonanceSlider.setBounds(row1.removeFromLeft(80).reduced(5));
+    filterResonanceLabel.setBounds(filterResonanceSlider.getBounds().removeFromBottom(20));
+    
+    auto row2 = area.removeFromTop(80);
+    filterDriveSlider.setBounds(row2.removeFromLeft(80).reduced(5));
+    filterDriveLabel.setBounds(filterDriveSlider.getBounds().removeFromBottom(20));
+    
+    filterEnvAmountSlider.setBounds(row2.removeFromLeft(80).reduced(5));
+    filterEnvAmountLabel.setBounds(filterEnvAmountSlider.getBounds().removeFromBottom(20));
+}
+
+void Successor37AudioProcessorEditor::layoutEnvelopeSection(juce::Rectangle<int> area)
+{
+    area.reduce(10, 10);
+    
+    // Amp envelope row
+    auto ampRow = area.removeFromTop(80);
+    attackSlider.setBounds(ampRow.removeFromLeft(70).reduced(5));
+    attackLabel.setBounds(attackSlider.getBounds().removeFromBottom(20));
+    
+    decaySlider.setBounds(ampRow.removeFromLeft(70).reduced(5));
+    decayLabel.setBounds(decaySlider.getBounds().removeFromBottom(20));
+    
+    sustainSlider.setBounds(ampRow.removeFromLeft(70).reduced(5));
+    sustainLabel.setBounds(sustainSlider.getBounds().removeFromBottom(20));
+    
+    releaseSlider.setBounds(ampRow.removeFromLeft(70).reduced(5));
+    releaseLabel.setBounds(releaseSlider.getBounds().removeFromBottom(20));
+    
+    // Filter envelope row
+    auto filterRow = area.removeFromTop(80);
+    filterAttackSlider.setBounds(filterRow.removeFromLeft(70).reduced(5));
+    filterAttackLabel.setBounds(filterAttackSlider.getBounds().removeFromBottom(20));
+    
+    filterDecaySlider.setBounds(filterRow.removeFromLeft(70).reduced(5));
+    filterDecayLabel.setBounds(filterDecaySlider.getBounds().removeFromBottom(20));
+    
+    filterSustainSlider.setBounds(filterRow.removeFromLeft(70).reduced(5));
+    filterSustainLabel.setBounds(filterSustainSlider.getBounds().removeFromBottom(20));
+    
+    filterReleaseSlider.setBounds(filterRow.removeFromLeft(70).reduced(5));
+    filterReleaseLabel.setBounds(filterReleaseSlider.getBounds().removeFromBottom(20));
+}
+
+void Successor37AudioProcessorEditor::layoutModulationSection(juce::Rectangle<int> area)
+{
+    area.reduce(10, 10);
+    
+    auto row1 = area.removeFromTop(80);
+    lfo1RateSlider.setBounds(row1.removeFromLeft(80).reduced(5));
+    lfo1RateLabel.setBounds(lfo1RateSlider.getBounds().removeFromBottom(20));
+    
+    lfo1AmountSlider.setBounds(row1.removeFromLeft(80).reduced(5));
+    lfo1AmountLabel.setBounds(lfo1AmountSlider.getBounds().removeFromBottom(20));
+    
+    auto row2 = area.removeFromTop(80);
+    masterVolumeSlider.setBounds(row2.removeFromLeft(80).reduced(5));
+    masterVolumeLabel.setBounds(masterVolumeSlider.getBounds().removeFromBottom(20));
 }
