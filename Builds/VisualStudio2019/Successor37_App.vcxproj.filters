@@ -25,6 +25,9 @@
     <ClCompile Include="..\..\Source\Arpeggiator.cpp">
       <Filter>Successor37</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Chorus.cpp">
+      <Filter>Successor37</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\CustomLookAndFeel.cpp">
       <Filter>Successor37</Filter>
     </ClCompile>

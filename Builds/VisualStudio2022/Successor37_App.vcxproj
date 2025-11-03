@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Arpeggiator.cpp"/>
+    <ClCompile Include="..\..\Source\Chorus.cpp"/>
     <ClCompile Include="..\..\Source\CustomLookAndFeel.cpp"/>
     <ClCompile Include="..\..\Source\CustomSlider.cpp"/>
     <ClCompile Include="..\..\Source\LFO.cpp"/>

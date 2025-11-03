@@ -3,46 +3,43 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "CustomLookAndFeel.h" // We'll create this next
+#include "CustomLookAndFeel.h"
 
-class Successor37AudioProcessorEditor  : public juce::AudioProcessorEditor
+class Successor37AudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
-    Successor37AudioProcessorEditor (Successor37AudioProcessor&);
+    Successor37AudioProcessorEditor(Successor37AudioProcessor&);
     ~Successor37AudioProcessorEditor() override;
 
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     Successor37AudioProcessor& audioProcessor;
     
     // Custom look and feel
     CustomLookAndFeel customLookAndFeel;
     
-    // Background image
-    std::unique_ptr<juce::Drawable> backgroundImage;
-    
-    // Section headers
-    juce::Label oscSectionLabel, filterSectionLabel, envSectionLabel, lfoSectionLabel;
-    
     // Oscillator Section
-    juce::Slider oscWaveformSlider;
+    juce::ComboBox oscWaveformSelector;
     juce::Slider oscTuneSlider;
     juce::Slider oscPWMSlider;
-    juce::ComboBox oscWaveformSelector;
+    juce::Label oscTuneLabel;
+    juce::Label oscPWMLabel;
     
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> oscWaveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> oscTuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> oscPWMAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> oscWaveformAttachment;
     
     // Filter Section
     juce::Slider filterCutoffSlider;
     juce::Slider filterResonanceSlider;
     juce::Slider filterDriveSlider;
     juce::Slider filterEnvAmountSlider;
+    juce::Label filterCutoffLabel;
+    juce::Label filterResonanceLabel;
+    juce::Label filterDriveLabel;
+    juce::Label filterEnvAmountLabel;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterResonanceAttachment;
@@ -54,6 +51,10 @@ private:
     juce::Slider decaySlider;
     juce::Slider sustainSlider;
     juce::Slider releaseSlider;
+    juce::Label attackLabel;
+    juce::Label decayLabel;
+    juce::Label sustainLabel;
+    juce::Label releaseLabel;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
@@ -65,48 +66,41 @@ private:
     juce::Slider filterDecaySlider;
     juce::Slider filterSustainSlider;
     juce::Slider filterReleaseSlider;
+    juce::Label filterAttackLabel;
+    juce::Label filterDecayLabel;
+    juce::Label filterSustainLabel;
+    juce::Label filterReleaseLabel;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterAttackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterDecayAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterSustainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterReleaseAttachment;
     
-    // LFO Section
+    // LFO and Modulation Section
     juce::Slider lfo1RateSlider;
     juce::Slider lfo1AmountSlider;
-    juce::ComboBox lfo1WaveformSelector;
+    juce::Label lfo1RateLabel;
+    juce::Label lfo1AmountLabel;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfo1RateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfo1AmountAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfo1WaveformAttachment;
     
-    // Modulation Section
-    juce::Slider modWheelAmountSlider;
-    juce::Slider velocityAmountSlider;
-    
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> modWheelAmountAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> velocityAmountAttachment;
-    
-    // Output Section
+    // Master Volume
     juce::Slider masterVolumeSlider;
+    juce::Label masterVolumeLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> masterVolumeAttachment;
     
-    // Labels for sliders
-    juce::Label oscTuneLabel, oscPWMLabel, filterCutoffLabel, filterResonanceLabel;
-    juce::Label filterDriveLabel, filterEnvAmountLabel, attackLabel, decayLabel;
-    juce::Label sustainLabel, releaseLabel, lfo1RateLabel, lfo1AmountLabel;
-    juce::Label modWheelLabel, velocityLabel, masterVolumeLabel;
-    
-    void createSlider(juce::Slider& slider, juce::Label& label, const juce::String& name, 
-                     juce::AudioProcessorValueTreeState& apvts, const juce::String& paramID);
-    void createComboBox(juce::ComboBox& comboBox, const juce::String& name,
-                       juce::AudioProcessorValueTreeState& apvts, const juce::String& paramID);
-
-    // Helper methods for UI sections
+    // Helper methods for creating UI
     void createOscillatorSection();
     void createFilterSection();
     void createEnvelopeSection();
     void createModulationSection();
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Successor37AudioProcessorEditor)
+    // Layout helpers
+    void layoutOscillatorSection(juce::Rectangle<int> area);
+    void layoutFilterSection(juce::Rectangle<int> area);
+    void layoutEnvelopeSection(juce::Rectangle<int> area);
+    void layoutModulationSection(juce::Rectangle<int> area);
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Successor37AudioProcessorEditor)
 };
