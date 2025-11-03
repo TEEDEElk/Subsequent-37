@@ -162,15 +162,13 @@ void Successor37AudioProcessor::updateHostInfo()
     auto playhead = getPlayHead();
     if (playhead != nullptr)
     {
-        juce::Optional<juce::AudioPlayHead::PositionInfo> positionInfo = playhead->getPosition();
-        if (positionInfo.hasValue())
+        // Try newer JUCE API first (JUCE 7+)
+        if (auto positionInfo = playhead->getPosition())
         {
-            auto bpm = positionInfo->getBpm();
-            if (bpm.hasValue())
+            if (auto bpm = positionInfo->getBpm())
                 currentBPM = *bpm;
             
-            auto playing = positionInfo->getIsPlaying();
-            isPlaying = playing;
+            isPlaying = positionInfo->getIsPlaying();
 
             // Update effects with host info
             delay.setHostInfo(currentBPM, isPlaying);

@@ -112,7 +112,7 @@ void SynthVoice::controllerMoved(int controllerNumber, int newControllerValue)
 void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, 
                                 int startSample, int numSamples)
 {
-    if (!isVoiceActive())
+    if (!isActive())
         return;
 
     // Process each sample
